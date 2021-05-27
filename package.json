@@ -2,7 +2,7 @@
   "name": "chatnow",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "index.js",
   "scripts": {
     "start": "node main.js",
     "dev": "nodemon main.js",
@@ -19,5 +19,8 @@
     "nodemon": "^2.0.6",
     "socket.io": "^2.3.0",
     "socketio": "^1.0.0"
+  },
+  "engines": {
+    "node": "10.x"
   }
 }
