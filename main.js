@@ -34,35 +34,40 @@ io.on("connection", function (socket) {
     console.log(Newuser);
     socket.join(Newuser.roomname);
     io.emit('allUsers all', getAllUsers());
+    // socket.emit('rooms', io.sockets.adapter.rooms)[1];
   });
 
   socket.on("profile", (data) => {
     io.emit("profile", data);
   })
-
+  socket.on("image", (data) => {
+    io.emit("image", data);
+  })
   socket.on("private", function (data) {
     io.sockets.sockets[data.to].emit("private", {
       id: socket.id,
       to: data.to,
       data: data
     });
+
     socket.emit("private", {
       id: socket.id,
       to: data.to,
       data: data
     });
   });
-  socket.on("image", (image) => {
-    socket.emit('image', image.toString('base64')); // image should be a buffer
-  })
+
+//   socket.on('getRooms', function() {
+//     socket.emit('rooms', io.sockets.adapter.rooms);
+// });
+
 
   socket.on("new joined", (data) => {
     io.emit("new joined", data);
-    // io.emit ('allUsers all',getAllUsers());
   });
 
   socket.on("typing", function (data) {
-    socket.broadcast.emit("typing", data);
+    io.to(thisRoom).emit("typing", data);
   });
 
 
@@ -78,7 +83,7 @@ io.on("connection", function (socket) {
     if (user) {
       io.emit("disconnect user", user.username);
       console.log(user.username + ' has left');
-
+      io.emit('allUsers all', getAllUsers());
     }
 
   });

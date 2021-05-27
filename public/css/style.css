@@ -268,6 +268,10 @@ body {
 }
 .messaging-member:hover {
   background-color: var(--bg-page-darker);
+ 
+}
+.new-privatemessage {
+  background-color: #4974b8;
 }
 .messaging-member--new .messaging-member__name {
   color: var(--colour-text-darker);

@@ -5,20 +5,20 @@ $(document).ready(function () {
   //   localStorage.removeItem('profile');
   //   window.location.href = "http://localhost:3000";
   // };
-  function checkEvt(){
-    var evTypep=window.performance.getEntriesByType("navigation")[0].type;
-       if (evTypep=='reload'){
-         leave=confirm('Refreshing the page means leaving the room.\nAre you sure to leave the room')
-        if(leave){
+  function checkEvt() {
+    var evTypep = window.performance.getEntriesByType("navigation")[0].type;
+    if (evTypep == 'reload') {
+      leave = confirm('Refreshing the page means leaving the room.\nAre you sure to leave the room')
+      if (leave) {
         localStorage.removeItem('name');
         localStorage.removeItem('room');
         localStorage.removeItem('profile');
         window.location.replace("http://localhost:3000");
-        }
-       }
-      
-}
-checkEvt();
+      }
+    }
+
+  }
+  checkEvt();
   // window.addEventListener('beforeunload', function (e) {
   //   // Cancel the event
   //   e.preventDefault(); // If you prevent default behavior in Mozilla Firefox prompt will always be shown
@@ -32,46 +32,31 @@ checkEvt();
   $("body").toggleClass("dark-mode");
   let userName = localStorage.getItem("name");
   let room = localStorage.getItem("room");
-  let profile=localStorage.getItem("profile");
+  let profile = localStorage.getItem("profile");
   let ID = "";
   let private = false;
   let privateName = "";
   let privateID = "";
   var socket = io();
+  let profileicon="";
   // console.log(localStorage.getItem("name"))
   // console.log(localStorage.getItem("room"))
 
   window.EmojiPicker.init()
-  socket.emit("new joined", userName);
-  socket.emit("join room", {
-    username: userName,
-    roomName: room,
-    profile:profile
-  });
+
+  if( userName!=null){
+    socket.emit("new joined", userName);
+    socket.emit("join room", {
+      username: userName,
+      roomName: room,
+      profile: profile
+    });
+  }
+
   $(".room-user").html("#" + room + " - Room");
   $(".room-name").html(room);
 
-  // $(`.profile-img`).attr('src', profile);
 
-  // $("#userDetails").modal({
-  //   backdrop: "static",
-  //   keyboard: false
-  // });
-  // $("button.save").click(function () {
-  //   userName = $(".uname").val();
-  //   room = $(".uroom").val();
-  //   if(userName!="" || room!=""){
-  //   $("#userDetails").modal("hide");
-  //   socket.emit("new joined", userName);
-  //   socket.emit("join room", {
-  //     username: userName,
-  //     roomName: room,
-  //   });
-  //   $(".room-user").html("#" + room + " - Room");
-  //   $(".room-name").html(room);
-  //   return false;
-  // }
-  // });
 
   console.log("ready");
   $(".message").focus();
@@ -107,7 +92,10 @@ checkEvt();
   });
 
   $(".send").click(function () {
-    send();
+    if ($(".message").val() != "") {
+      send();
+    }
+
   });
 
 
@@ -117,19 +105,19 @@ checkEvt();
       ".online-users"
     ).empty();
     allUsers(data);
- 
+
   });
 
-  function allUsers(data){
+  function allUsers(data) {
     $.map(data.reverse(), function (user) {
       if (userName == user.username) {
         console.log(user.profile)
         $(
           ".online-users"
-        ).prepend(`<li id="" user-name="${user.username}" user-id="${user.socketID}" class="messaging-member  messaging-member--new messaging-member--online private-user">
+        ).prepend(`<li id="" user-profile="${user.profile}" user-name="${user.username}" user-id="${user.socketID}" class="messaging-member  messaging-member--new messaging-member--online private-user">
           <div class="messaging-member__wrapper">
             <div class="messaging-member__avatar">
-              <img onerror="this.onerror=null;this.src='${user.profile}';" class="profile-img ${user.username}-img" src="${user.profile}" alt="Bessie Cooper" loading="lazy">
+              <img onerror="this.onerror=null;this.src='${user.profile}';" class="profile-img ${user.username}-img" src="${user.profile}" alt="profile" loading="lazy">
               <div class="user-status"></div>
             </div>
           
@@ -138,18 +126,22 @@ checkEvt();
           </div>
           </li>`);
       } else {
+        if (!$(".message-container ul").is(`#${user.socketID}`)) {
+          $('.message-container').append(`<ul id="${user.socketID}" class="chat__list-messages private d-none">Private Messaging</ul>`)
+        }
+
         console.log(user.profile)
         $(
           ".online-users"
-        ).prepend(`<li id="" user-name="${user.username}" user-id="${user.socketID}" class="messaging-member messaging-member--new messaging-member--online private-user">
+        ).append(`<li id="" user-profile="${user.profile}" user-name="${user.username}" user-id="${user.socketID}" class="messaging-member messaging-member--new messaging-member--online private-user ${user.socketID}-parent">
           <div class="messaging-member__wrapper">
             <div class="messaging-member__avatar">
-              <img onerror="this.onerror=null;this.src='${user.profile}';"  class="profile-img ${user.username}-img" src="${user.profile}" alt="Bessie Cooper" loading="lazy">
+              <img onerror="this.onerror=null;this.src='${user.profile}';"  class="profile-img ${user.username}-img" src="${user.profile}" alt="profile" loading="lazy">
               <div class="user-status"></div>
             </div>
           
             <span class="messaging-member__name mt-3 user-name">${user.username}</span>
-          
+            <span class="messaging-member__message mt-2 small ${user.socketID}"></span>
           </div>
           </li>`);
       }
@@ -157,11 +149,45 @@ checkEvt();
     });
   }
 
+  $('.search').keyup(() => {
+    filter($('.search'))
+  })
+
+
+  function filter(element) {
+    var value = $(element).val();
+    $(".online-users > li").each(function () {
+      if ($(this).attr("user-name").search(value) > -1) {
+        $(this).show();
+      } else {
+        $(this).hide();
+      }
+    });
+  }
+
+
+  function showTypeMessage(userID, type) {
+    $('.private').each(function () {
+      $(this).addClass("d-none").removeClass("d-block");
+    })
+    if (type == "room") {
+      $(".messages").addClass("d-block").removeClass("d-none");
+    } else {
+      $(".messages").addClass("d-none").removeClass("d-block");
+      $(`#${userID}`).addClass("d-block").removeClass("d-none");
+    }
+  }
+
   $(".rooms").click(function () {
+    $(".message-container").animate({
+      scrollTop: $(".message-container")[0].scrollHeight
+    }, 1000);
     private = false;
+    showTypeMessage(null, "room")
     // privateID = "";
-    $(".private-messages").addClass("d-none").removeClass("d-block");
-    $(".messages").addClass("d-block").removeClass("d-none");
+    // $(".private-messages").addClass("d-none").removeClass("d-block");
+    // $(`#${privateID}`).addClass("d-none").removeClass("d-block");
+    // $(".messages").addClass("d-block").removeClass("d-none");
     $(".user-icon").addClass("d-none").removeClass("d-block");
     $(".room-user").html("#" + $(".room-name").text() + " - Room");
   });
@@ -169,19 +195,29 @@ checkEvt();
   $(".online-users").on("click", ".private-user", function () {
     privateName = $(this).attr("user-name");
     privateID = ($(this).attr("user-id"));
+    profileicon=$(this).attr("user-profile");
     if (privateName != userName) {
-
-      // $('.message-container').append(` <ul id="${privateID}" class="chat__list-messages "></ul>`)
+      // if ( !$(".message-container ul").is(`#${privateID}`) ) {
+      //   alert(" not existing")
+      //   $('.message-container').append(`<ul id="${privateID}" class="chat__list-messages private">Private Messaging</ul>`)
+      //   }else{
+      //     $(`#${privateID}`).addClass("d-block").removeClass("d-none");
+      //   }
+      showTypeMessage(privateID, "private");
+      $(`.${privateID}-parent`).removeClass('new-privatemessage')
       private = true;
-      $(".messages").addClass("d-none").removeClass("d-block");
+      // $(".messages").addClass("d-none").removeClass("d-block");
       // $(`#${privateID}`).addClass("d-block").removeClass("d-none");
 
-      $(`.private-messages`).addClass("d-block").removeClass("d-none");
+      // $(`.private-messages`).addClass("d-block").removeClass("d-none");
       $(".user-icon").addClass("d-block").removeClass("d-none");
       $(".room-user").html($(this).attr("user-name"));
+      $('.profile-icon').attr('src', profileicon)
 
     }
-
+    $(".message-container").animate({
+      scrollTop: $(".message-container")[0].scrollHeight
+    }, 1000);
   });
 
   $('.leave').click(function () {
@@ -193,6 +229,53 @@ checkEvt();
     }
 
   })
+
+    $('#txtURL').change(function () {
+      $('#imgPreview').attr('src', $('#txtURL').val())
+    }) 
+  
+    $('.send-image').click(function (){
+      socket.emit("image", {
+        image:$('#txtURL').val(),
+        sender:userName
+      })
+      $('#txtURL').val("")
+      $('#imgPreview').attr('src',"")
+      $("#send-image").modal("hide");
+    })
+
+    socket.on("image", (data) => {
+      if(data.sender==userName){
+        divs =`
+        <li>
+        <div class="chat__time">${ moment().format("hh:mm")}
+        </div>
+        
+        <div class="chat__bubble chat__bubble--me bg-secondary">
+          <img class="img-fluid" src="${data.image}" alt="">
+         </div>
+      </li>
+        `;
+      }else{
+        divs =`
+        <li>
+        <div class="chat__time">${ moment().format("hh:mm")}
+        </div>
+        <p class="small m-0 p-0 ml-2">${data.sender}
+        </p>
+        <div class="chat__bubble chat__bubble--you bg-secondary">
+          <img class="img-fluid" src="${data.image}" alt="">
+         </div>
+      </li>
+        `;
+      }
+
+      $(".messages").append(divs);
+    $(".message-container").animate({
+      scrollTop: $(".message-container")[0].scrollHeight
+    }, 1000);
+     
+    });
 
   function send() {
     if (private) {
@@ -224,24 +307,35 @@ checkEvt();
       user
     } = data;
 
-    if (!isTyping) {
-      $(".user-typing").html("");
-      $(".c-form").removeClass("mt-3").addClass("mt-2");
-    } else {
-      $(".user-typing").html(`${user} is typing...`);
-      $(".c-form").removeClass("mt-2").addClass("mt-3");
+    if (user != userName) {
+      if (!isTyping) {
+        $(".user-typing").html("");
+        $(".c-form").removeClass("mt-3").addClass("mt-2");
+      } else {
+        $(".user-typing").html(`${user} is typing...`);
+        $(".c-form").removeClass("mt-2").addClass("mt-3");
+      }
     }
+
   });
 
+  // function privateType(user) {
+  //   if (private) {
+  //     if (user != userName) {
+
+  //     }
+  //   }
+  // }
 
   socket.on("chat message", (data) => {
     displayMessage(data);
   });
 
   socket.on("private", function (data) {
-    displayMessage(data);
-    // displayPrivateMessage(data) ;
-    // $('.private-messages').append('<li class="private"><em><strong>'+ data.from +' -> '+ data.to +'</strong>: '+ data.msg +'</em></li>');
+    $(`.${data.id}-parent`).addClass('new-privatemessage')
+    displayPrivateMessage(data);
+    $(`.${data.id}`).html(`${data.data.value}`);
+    // $(`#${data.to}`).append('<li class="to-private"><em><strong>'+ privateName + data.data.value +'</em></li>');
   });
 
   function displayPrivateMessage(data) {
@@ -263,18 +357,21 @@ checkEvt();
         data.data.value +
         "</div></li>";
     }
-    $(`#${data.to}`).append(divs)
+    // $(`#${data.to}`).append(divs)
+    // $('.private-messages').append(divs)
+    $(`#${data.to}`).append(divs);
+    $(`#${data.id}`).append(divs);
     $(".message-container").animate({
       scrollTop: $(".message-container")[0].scrollHeight
     }, 1000);
+
   }
 
 
-  //  messsaging global and private
+  //  messsaging global
   function displayMessage(data) {
     // if(pri){
     if (data.id === ID) {
-      console.log("This person has sent a message");
       divs =
         '<li><div class="chat__time">' +
         moment().format("hh:mm") +
@@ -293,12 +390,8 @@ checkEvt();
     }
 
 
-    if (private) {
-      $('.private-messages').append(divs)
-    } else {
-      $(".messages").append(divs);
-    }
-    // $(".messages").append(divs);
+
+    $(".messages").append(divs);
     $(".message-container").animate({
       scrollTop: $(".message-container")[0].scrollHeight
     }, 1000);
@@ -326,8 +419,7 @@ checkEvt();
   socket.on('profile', (data) => {
 
     $(`.${data.username}-img`).attr('src', data.profile);
-   
-    // alert(data.username+" change his profile picture")
+
   })
 
 
@@ -340,8 +432,8 @@ checkEvt();
     createToast({
       style: 'success',
       content: 'Successfully change profile'
-  });
-  
+    });
+
     //  $('${user.username}-img').attr('src',$('.image-url').val());
     $("#changeProfle").modal("hide");
   })
@@ -350,42 +442,42 @@ checkEvt();
 
 
 
-// toast Notification
-function createToast(options) {
-  var settings = $.extend({
+  // toast Notification
+  function createToast(options) {
+    var settings = $.extend({
       style: null,
       content: '',
       delay: 3000
-  }, options);
+    }, options);
 
-  if ($('.toast-wrap').length < 1) {
+    if ($('.toast-wrap').length < 1) {
       $('body').append('<div class="toast-wrap"></div>');
-  }
+    }
 
-  var $wrapper = $('.toast-wrap');
+    var $wrapper = $('.toast-wrap');
 
-  var $newToast = $('<div class="toast ' + settings.style + '"><span class="toast-close">Close</span><p>' + settings.content + '</p></div>').appendTo($wrapper);
+    var $newToast = $('<div class="toast ' + settings.style + '"><span class="toast-close">Close</span><p>' + settings.content + '</p></div>').appendTo($wrapper);
 
-  setTimeout(function() {
+    setTimeout(function () {
       $newToast.addClass('active');
-  }, 100);
+    }, 100);
 
-  $newToast.children('.toast-close').click(function() {
+    $newToast.children('.toast-close').click(function () {
       var _this = $(this).parent();
       _this.removeClass('active');
-      setTimeout(function() {
+      setTimeout(function () {
         _this.remove();
       }, 500);
-  });
+    });
 
-  $newToast.delay(settings.delay).queue(function() {
-    var _this = $(this);
-    _this.removeClass('active');
-    setTimeout(function() {
-      _this.remove();
-    }, 500);
-  });
-}
+    $newToast.delay(settings.delay).queue(function () {
+      var _this = $(this);
+      _this.removeClass('active');
+      setTimeout(function () {
+        _this.remove();
+      }, 500);
+    });
+  }
 
 
 

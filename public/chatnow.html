@@ -14,7 +14,8 @@
   <link rel="stylesheet" type="text/css" href="/css/modal.css" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
+  <!-- <script src="/socket.io/socket.io.js"></script> -->
+  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
   <script src="/js/chat.js"></script>
   <link rel="stylesheet" href="/css/toast.css">
   <script src="/js/function.js"></script>
@@ -24,35 +25,33 @@
 </head>
 
 <body>
-  <!-- <div class="modal fade " id="userDetails" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog center" role="document">
-      <div class="modal-content ">
-        <div class="modal-header ">
-          <h5 class="modal-title " id="exampleModalLabel">ChatNow</h5>
+
+  <div class="modal fade" id="send-image" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Send Image</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body">
-          <form>
-          <div class="form-group">
-            <label for="exampleInputEmail1">Username</label>
-            <input type="text" class="form-control uname" required id="exampleInputEmail1" aria-describedby="emailHelp"
-              placeholder="Enter username" />
-              </div>
-          <div class="form-group">
-            <label for="exampleInputPassword1">Room</label>
-            <input type="text" class="form-control uroom" required id="exampleInputPassword1" placeholder="Enter room" />
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">URL</span>
+            </div>
+            <input type="text" id="txtURL" class="form-control image-data" placeholder="Image URL" aria-label="Username"
+              aria-describedby="basic-addon1">
           </div>
-
-             
+          <img class="img-fluid " id="imgPreview" />
         </div>
         <div class="modal-footer">
-           <button type="submit" class="btn btn-primary save">Go</button>
+          <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> -->
+          <button type="button" class="btn btn-primary send-image">Send</button>
         </div>
-      </form>
       </div>
     </div>
-  </div> -->
-
+  </div>
 
   <div class="modal fade" id="changeProfle" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -68,7 +67,8 @@
             <div class="input-group-prepend">
               <span class="input-group-text" id="basic-addon1">URL</span>
             </div>
-            <input type="text" class="form-control image-url" placeholder="Image URL" aria-label="Username" aria-describedby="basic-addon1">
+            <input type="text" class="form-control image-url" placeholder="Image URL" aria-label="Username"
+              aria-describedby="basic-addon1">
           </div>
         </div>
         <div class="modal-footer">
@@ -78,7 +78,6 @@
       </div>
     </div>
   </div>
-
 
   <div class="home-page__content messages-page" style="z-index: 1;">
     <div class="container-fluid h-100">
@@ -97,8 +96,8 @@
             <button type="button" class="btn text-secondary" data-toggle="modal" data-target="#changeProfle">
               <ion-icon name="person-circle-outline" style="font-size: 2.2rem;"></ion-icon>
             </button>
-           
-          
+
+
           </div>
           <div class="messages-page__search mb-0 px-3 pb-3">
             <div class="custom-form__search-wrapper">
@@ -115,7 +114,7 @@
           </div>
           <h5 class="text-secondary ml-4">Active Users</h5>
           <ul class="messages-page__list pb-5 px-1 px-md-3 online-users">
-        
+
             <!-- <li class="messaging-member messaging-member--new messaging-member--online">
                   <div class="messaging-member__wrapper">
                     <div class="messaging-member__avatar">
@@ -148,9 +147,9 @@
                 <div class="chat__infos pl-2 pl-md-0">
                   <div class="chat-member__wrapper" data-online="true">
                     <div class="chat-member__avatar user-icon d-none">
-                      <img
+                      <img class="profile-icon"
                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTiXjldHhFIVdvZDCeoq6sSzSzxg95OvLCxQ&usqp=CAU"
-                        alt="Jenny Smith" loading="lazy" />
+                        alt="profile" loading="lazy" />
                       <div class="user-status user-status--large"></div>
                     </div>
                     <div class="chat-member__details">
@@ -161,7 +160,7 @@
                 </div>
                 <div class="chat__actions mr-2">
                   <ul class="m-0">
-                    <li>
+                    <!-- <li>
                       <svg xmlns="http://www.w3.org/2000/svg" class="svg-icon" viewBox="0 0 48 48">
                         <path
                           d="M38.4,48c-2.1,0-5.1-.8-9.5-3.2a62.9,62.9,0,0,1-14.6-11A61.7,61.7,0,0,1,3.2,19C-.9,11.8-.3,8.5.7,6.4A9.7,9.7,0,0,1,4.8,2,21.1,21.1,0,0,1,7.8.4h.3c1.8-.7,3-.3,4.9,1.5h.1a40.1,40.1,0,0,1,5.4,8.2c1.3,2.6,1.6,4.3-.2,6.9l-.5.6c-.8,1-.8,1.2-.8,1.6s1.9,3.4,5.2,6.7S28,30.8,28.8,31s.6,0,1.6-.8l.7-.4c2.5-1.9,4.2-1.6,6.8-.3A40.6,40.6,0,0,1,46.1,35h.1c1.8,1.9,2.2,3.1,1.5,4.9v.2h0a21.1,21.1,0,0,1-1.6,3,10,10,0,0,1-4.3,4.1A7.7,7.7,0,0,1,38.4,48ZM9.5,4.1H9.2L6.9,5.4H6.8A6.3,6.3,0,0,0,4.3,8.1c-.3.7-1.2,2.6,2.4,9A58.9,58.9,0,0,0,17.1,30.9,58.2,58.2,0,0,0,30.9,41.3c6.4,3.6,8.4,2.7,9.1,2.4a6.7,6.7,0,0,0,2.5-2.5.1.1,0,0,0,.1-.1c.5-.8.9-1.6,1.3-2.4v-.2l-.5-.6a35.4,35.4,0,0,0-7.3-4.8c-1.7-.8-1.8-.8-2.7-.1l-.6.4A5.3,5.3,0,0,1,28,34.9c-2.9-.6-7.4-4.9-8.7-6.2s-5.6-5.8-6.2-8.7.6-3.6,1.5-4.8l.4-.6c.7-.9.8-1-.1-2.7a35.4,35.4,0,0,0-4.8-7.3Z"
@@ -177,7 +176,7 @@
                           d="M36.6,20.4A10.2,10.2,0,1,1,46.8,10.2,10.2,10.2,0,0,1,36.6,20.4ZM36.6,4a6.2,6.2,0,1,0,6.2,6.2A6.2,6.2,0,0,0,36.6,4Z"
                           fill="#f68b3c" />
                       </svg>
-                    </li>
+                    </li> -->
                     <li class="chat__details d-flex d-xl-none">
                       <svg xmlns="http://www.w3.org/2000/svg" class="svg-icon" viewBox="0 0 42.2 11.1">
                         <g>
@@ -192,22 +191,26 @@
               </div>
               <div class="chat__content scroll-over pt-4 px-3 message-container">
 
-                <ul class="chat__list-messages messages"></ul>
-                <ul class="chat__list-messages private-messages d-none">
-                  <li id=""><div class="chat__time">Start chatting now</div></li>
+                <ul class="chat__list-messages messages">
+
+                 
                 </ul>
+                <!-- <ul class="chat__list-messages private-messages d-none">
+                  <li id=""><div class="chat__time">Start chatting now</div></li>
+                </ul> -->
 
               </div>
-              
+
               <div class="chat__send-container px-2 px-md-3 pt-1 pt-md-3">
-               
+
                 <div class="custom-form__send-wrapper">
                   <p class="user-typing small  ml-4"></p>
                   <form onsubmit="return false;">
-                    <input type="text" data-emoji="true" id="chat-input" name="emoji" class=" form-control custom-form message"  placeholder="Send a message..."/>
+                    <input type="text" data-emoji="true" id="chat-input" name="emoji"
+                      class=" form-control custom-form message" placeholder="Send a message..." />
                     <!-- <input type="text" class="form-control custom-form message" id="message"
                       placeholder="Enter your message here" autocomplete="off" /> -->
-                    <div class="custom-form__send-img  c-form mt-2">
+                    <div class="custom-form__send-img   c-form mt-2" data-toggle="modal" data-target="#send-image">
                       <!-- <input type="file" class="form-control-file image" id="file" > -->
                       <svg xmlns="http://www.w3.org/2000/svg" class="svg-icon svg-icon--send-img"
                         viewBox="0 0 45.7 45.7">
@@ -257,41 +260,12 @@
               </g>
             </svg>
           </div>
-          <button class="btn btn-warning btn-sm mt-4 float-right leave" >Leave Room</button>
+          <button class="btn btn-warning btn-sm mt-4 float-right leave">Leave Room</button>
           <h3 class="page-header p-4">Rooms</h3>
-<button class="btn btn-secondary rooms"># <span class="room-name"></span></button>
-          <!-- <div class="user-profile__wrapper">
-                <div class="user-profile__avatar">
-                  <img src="https://tiantsoa.alwaysdata.net/img/user-2.jpg" alt="Jenny Smith" loading="lazy">
-                </div>
-                <div class="user-profile__details mt-1">
-                  <span class="user-profile__name">Jenny Smith</span>
-                  <span class="user-profile__phone">(025) 015-234-567</span>
-                  <span class="user-profile__location">New York, United States</span>
-                </div>
-                <div class="user-profile__description">
-                  <p>Fly me to the moon 🌙 If you feel like your life is a routine, step back and take a deep breath.</p>
-                </div>
-                <div class="user-profile__learning mt-4">
-                  <span class="user-profile__label">Social Medias</span>
-                  <ul class="user-profile__tags user-profile__tags--primary mt-2">
-                    <li><a href="https://www.instagram.com/tiantsoa_sh/" target="_blank">Instagram</a></li>
-                    <li><a href="https://www.linkedin.com/in/tiantsoa-rabemananjara-254655152/" target="_blank">Linkedin</a></li>
-                    <li><a href="https://codepen.io/tiantsoa" target="_blank">Codepen</a></li>
-                  </ul>
-                </div>
-                <div class="user-profile__hobbies">
-                  <span class="user-profile__label">Activities</span>
-                  <ul class="user-profile__tags user-profile__tags--secondary mt-2">
-                    <li>Biking</li>
-                    <li>Cooking</li>
-                    <li>Traveling</li>
-                    <li>Grahic design</li>
-                  </ul>
-                </div>
-              </div> -->
+          <button class="btn btn-secondary rooms"># <span class="room-name"></span></button>
+
         </div>
-        <!-- end infos section  -->
+
       </div>
     </div>
   </div>
