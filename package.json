@@ -16,7 +16,6 @@
   "dependencies": {
     "express": "^4.17.1",
     "moment": "^2.26.0",
-    "nodemon": "^2.0.6",
     "socket.io": "^2.3.0",
     "socketio": "^1.0.0"
   },
