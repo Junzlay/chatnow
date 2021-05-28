@@ -1,10 +1,5 @@
 $(document).ready(function () {
-  // window.onbeforeunload = function() {
-  //   localStorage.removeItem('name');
-  //   localStorage.removeItem('room');
-  //   localStorage.removeItem('profile');
-  //   window.location.href = "http://localhost:3000";
-  // };
+
   function checkEvt() {
     var evTypep = window.performance.getEntriesByType("navigation")[0].type;
     if (evTypep == 'reload') {
@@ -19,33 +14,26 @@ $(document).ready(function () {
 
   }
   checkEvt();
-  // window.addEventListener('beforeunload', function (e) {
-  //   // Cancel the event
-  //   e.preventDefault(); // If you prevent default behavior in Mozilla Firefox prompt will always be shown
-  //   // Chrome requires returnValue to be set
-  //   e.returnValue = confirm("Refreshing the page means leaving the room..\nAre you sure to leave the room?")
-  //   alert("a")
-  // });
-  // sessionStorage.setItem("is_reloaded", true);
-  // if (sessionStorage.getItem("is_reloaded")) alert('Reloaded!');
+
   $("#userDetails").modal("hide");
   $("body").toggleClass("dark-mode");
   let userName = localStorage.getItem("name");
-  let room = localStorage.getItem("room");
+  let room = localStorage.getItem("room") || "global";
   let profile = localStorage.getItem("profile");
   let ID = "";
   let private = false;
   let privateName = "";
   let privateID = "";
   var socket = io();
-  let profileicon="";
-  // console.log(localStorage.getItem("name"))
-  // console.log(localStorage.getItem("room"))
+  let profileicon = "";
 
   window.EmojiPicker.init()
 
-  if( userName!=null){
-    socket.emit("new joined", userName);
+  if (userName != null) {
+    socket.emit("new joined", {
+      user: userName,
+      room: room
+    });
     socket.emit("join room", {
       username: userName,
       roomName: room,
@@ -63,13 +51,13 @@ $(document).ready(function () {
 
   // new join user
   socket.on("new joined", (data) => {
-    if (data == userName) {
+    if (data.user == userName) {
       $(".messages").append(
         '<li><div class="chat__time">You have joined the room</div></li>'
       );
     } else {
       $(".messages").append(
-        '<li><div class="chat__time">' + data + " Joined the room</div></li>"
+        '<li><div class="chat__time">' + data.user + " Joined the room</div></li>"
       );
     }
   });
@@ -127,7 +115,7 @@ $(document).ready(function () {
           </li>`);
       } else {
         if (!$(".message-container ul").is(`#${user.socketID}`)) {
-          $('.message-container').append(`<ul id="${user.socketID}" class="chat__list-messages private d-none">Private Messaging</ul>`)
+          $('.message-container').append(`<ul id="${user.socketID}" class="chat__list-messages private d-none"> <p class="text-center">Private Message</p></ul>`)
         }
 
         console.log(user.profile)
@@ -184,10 +172,7 @@ $(document).ready(function () {
     }, 1000);
     private = false;
     showTypeMessage(null, "room")
-    // privateID = "";
-    // $(".private-messages").addClass("d-none").removeClass("d-block");
-    // $(`#${privateID}`).addClass("d-none").removeClass("d-block");
-    // $(".messages").addClass("d-block").removeClass("d-none");
+
     $(".user-icon").addClass("d-none").removeClass("d-block");
     $(".room-user").html("#" + $(".room-name").text() + " - Room");
   });
@@ -195,21 +180,13 @@ $(document).ready(function () {
   $(".online-users").on("click", ".private-user", function () {
     privateName = $(this).attr("user-name");
     privateID = ($(this).attr("user-id"));
-    profileicon=$(this).attr("user-profile");
+    profileicon = $(`.${privateName}-img`).prop("src");
     if (privateName != userName) {
-      // if ( !$(".message-container ul").is(`#${privateID}`) ) {
-      //   alert(" not existing")
-      //   $('.message-container').append(`<ul id="${privateID}" class="chat__list-messages private">Private Messaging</ul>`)
-      //   }else{
-      //     $(`#${privateID}`).addClass("d-block").removeClass("d-none");
-      //   }
-      showTypeMessage(privateID, "private");
-      $(`.${privateID}-parent`).removeClass('new-privatemessage')
-      private = true;
-      // $(".messages").addClass("d-none").removeClass("d-block");
-      // $(`#${privateID}`).addClass("d-block").removeClass("d-none");
 
-      // $(`.private-messages`).addClass("d-block").removeClass("d-none");
+      showTypeMessage(privateID, "private");
+      $(`.${privateID}-parent`).removeClass('messaging-member--active')
+      private = true;
+
       $(".user-icon").addClass("d-block").removeClass("d-none");
       $(".room-user").html($(this).attr("user-name"));
       $('.profile-icon').attr('src', profileicon)
@@ -230,52 +207,62 @@ $(document).ready(function () {
 
   })
 
-    $('#txtURL').change(function () {
-      $('#imgPreview').attr('src', $('#txtURL').val())
-    }) 
-  
-    $('.send-image').click(function (){
-      socket.emit("image", {
-        image:$('#txtURL').val(),
-        sender:userName
-      })
-      $('#txtURL').val("")
-      $('#imgPreview').attr('src',"")
-      $("#send-image").modal("hide");
-    })
+  $('#txtURL').change(function () {
+    $('#imgPreview').attr('src', $('#txtURL').val())
+  })
 
-    socket.on("image", (data) => {
-      if(data.sender==userName){
-        divs =`
+  $('.send-image').click(function () {
+    if (private) {
+      socket.emit("private image", {
+        image: $('#txtURL').val(),
+        to: privateID,
+        user: userName
+      })
+      $(`.${privateID}`).html("You send an image");
+    } else {
+      socket.emit("image", {
+        image: $('#txtURL').val(),
+        sender: userName
+      })
+    }
+
+    $('#txtURL').val("")
+    $('#imgPreview').attr('src', "")
+    $("#send-image").modal("hide");
+  })
+
+  socket.on("image", (data) => {
+    if (data.sender == userName) {
+      divs = `
         <li>
         <div class="chat__time">${ moment().format("hh:mm")}
         </div>
         
-        <div class="chat__bubble chat__bubble--me bg-secondary">
-          <img class="img-fluid" src="${data.image}" alt="">
+        <div class="chat__bubble chat__bubble--me bg-transparent">
+          <img class="img-fluid rounded" src="${data.image}" alt="">
          </div>
       </li>
         `;
-      }else{
-        divs =`
+    } else {
+      divs = `
         <li>
         <div class="chat__time">${ moment().format("hh:mm")}
         </div>
         <p class="small m-0 p-0 ml-2">${data.sender}
         </p>
-        <div class="chat__bubble chat__bubble--you bg-secondary">
-          <img class="img-fluid" src="${data.image}" alt="">
+        <div class="chat__bubble chat__bubble--you bg-transparent">
+          <img class="img-fluid rounded" src="${data.image}" alt="">
          </div>
       </li>
         `;
-      }
+    }
 
-      $(".messages").append(divs);
+    $(".messages").append(divs);
     $(".message-container").animate({
       scrollTop: $(".message-container")[0].scrollHeight
     }, 1000);
-     
-    });
+
+  });
 
   function send() {
     if (private) {
@@ -284,6 +271,8 @@ $(document).ready(function () {
         to: privateID,
         user: userName
       });
+      $(`.${privateID}-parent`).removeClass('messaging-member--active')
+      $(`.${privateID}`).html($(".message").val());
     } else {
       socket.emit("chat message", {
         value: $(".message").val(),
@@ -319,24 +308,54 @@ $(document).ready(function () {
 
   });
 
-  // function privateType(user) {
-  //   if (private) {
-  //     if (user != userName) {
 
-  //     }
-  //   }
-  // }
 
   socket.on("chat message", (data) => {
     displayMessage(data);
   });
 
   socket.on("private", function (data) {
-    $(`.${data.id}-parent`).addClass('new-privatemessage')
+    $(`.${data.id}-parent`).addClass('messaging-member--active')
     displayPrivateMessage(data);
     $(`.${data.id}`).html(`${data.data.value}`);
-    // $(`#${data.to}`).append('<li class="to-private"><em><strong>'+ privateName + data.data.value +'</em></li>');
   });
+
+  socket.on("private image", function (data) {
+    if (data.data.user == userName) {
+      divs = `
+        <li>
+        <div class="chat__time">${ moment().format("hh:mm")}
+        </div>
+        
+        <div class="chat__bubble chat__bubble--me bg-transparent">
+          <img class="img-fluid rounded" src="${data.data.image}" alt="">
+         </div>
+      </li>
+        `;
+    } else {
+      divs = `
+        <li>
+        <div class="chat__time">${ moment().format("hh:mm")}
+        </div>
+        <p class="small m-0 p-0 ml-2">${data.data.user}
+        </p>
+        <div class="chat__bubble chat__bubble--you bg-transparent">
+          <img class="img-fluid rounded" src="${data.data.image}" alt="">
+         </div>
+      </li>
+        `;
+    }
+    $(`.${data.id}-parent`).addClass('messaging-member--active')
+
+    $(`.${data.id}`).html('Sends an image');
+
+    $(`#${data.to}`).append(divs);
+    $(`#${data.id}`).append(divs);
+    $(".message-container").animate({
+      scrollTop: $(".message-container")[0].scrollHeight
+    }, 1000);
+  });
+
 
   function displayPrivateMessage(data) {
     if (data.id === ID) {
@@ -357,8 +376,7 @@ $(document).ready(function () {
         data.data.value +
         "</div></li>";
     }
-    // $(`#${data.to}`).append(divs)
-    // $('.private-messages').append(divs)
+
     $(`#${data.to}`).append(divs);
     $(`#${data.id}`).append(divs);
     $(".message-container").animate({
@@ -429,11 +447,15 @@ $(document).ready(function () {
       profile: $('.image-url').val()
     })
 
+    $('.image-url').keyup(function () {
+      $('#profile-preview').attr('src', $('.image-url').val())
+    })
+
     createToast({
       style: 'success',
       content: 'Successfully change profile'
     });
-
+    $('.image-url').val("")
     //  $('${user.username}-img').attr('src',$('.image-url').val());
     $("#changeProfle").modal("hide");
   })

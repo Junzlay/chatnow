@@ -8,7 +8,8 @@ const {
   joinUser,
   removeUser,
   findUser,
-  getAllUsers
+  getAllUsers,
+  getAllUsersByRoom
 } = require('./users');
 // app.use(express.static('public/'));
 app.use(express.static(__dirname + '/public'));
@@ -23,6 +24,7 @@ io.on("connection", function (socket) {
   socket.emit('getCount', total)
   // console.log("connected");
   socket.on("join room", (data) => {
+    thisRoom = data.roomName;
     let Newuser = joinUser(socket.id, data.username, data.roomName,data.profile)
     socket.emit('send data', {
       id: socket.id,
@@ -34,7 +36,7 @@ io.on("connection", function (socket) {
     thisRoom = Newuser.roomname;
     console.log(Newuser);
     socket.join(Newuser.roomname);
-    io.emit('allUsers all', getAllUsers());
+    io.to(thisRoom).emit('allUsers all', getAllUsers());
     // socket.emit('rooms', io.sockets.adapter.rooms)[1];
   });
 
@@ -52,6 +54,20 @@ io.on("connection", function (socket) {
     });
 
     socket.emit("private", {
+      id: socket.id,
+      to: data.to,
+      data: data
+    });
+  });
+
+  socket.on("private image", function (data) {
+    io.sockets.sockets[data.to].emit("private image", {
+      id: socket.id,
+      to: data.to,
+      data: data
+    });
+
+    socket.emit("private image", {
       id: socket.id,
       to: data.to,
       data: data

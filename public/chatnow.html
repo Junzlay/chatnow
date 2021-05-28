@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Document</title>
+  <title>Chatnow</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <script src="https://unpkg.com/ionicons@5.4.0/dist/ionicons.js"></script>
   <!-- <script src="/socket.io/socket.io.js"></script> -->
-  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+  <!-- <script src="http://localhost:3000/socket.io/socket.io.js"></script> -->
   <script src="/js/chat.js"></script>
   <link rel="stylesheet" href="/css/toast.css">
   <script src="/js/function.js"></script>
@@ -23,10 +23,22 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment.min.js"></script>
   <!-- <script src="/js/function.js"></script> -->
 </head>
+<style>
+  .w-30{
+    width:30%;
 
+  }
+  .rounded{
+    border-radius: 20px !important;
+  }
+</style>
 <body>
 
-  <div class="modal fade" id="send-image" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+
+
+
+  <div class="modal fade modal-p-bottom" id="send-image" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -35,7 +47,7 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body text-center justify-content-center">
           <div class="input-group mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text" id="basic-addon1">URL</span>
@@ -43,7 +55,7 @@
             <input type="text" id="txtURL" class="form-control image-data" placeholder="Image URL" aria-label="Username"
               aria-describedby="basic-addon1">
           </div>
-          <img class="img-fluid " id="imgPreview" />
+          <img class="img-fluid mx-auto w-30 " id="imgPreview" />
         </div>
         <div class="modal-footer">
           <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> -->
@@ -71,6 +83,7 @@
               aria-describedby="basic-addon1">
           </div>
         </div>
+        <img class="img-fluid rounded-circle mx-auto w-30 mb-2" id="profile-preview" />
         <div class="modal-footer">
           <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> -->
           <button type="button" class="btn btn-primary ch-profile">Change Profle</button>
@@ -193,7 +206,7 @@
 
                 <ul class="chat__list-messages messages">
 
-                 
+                
                 </ul>
                 <!-- <ul class="chat__list-messages private-messages d-none">
                   <li id=""><div class="chat__time">Start chatting now</div></li>
@@ -219,6 +232,7 @@
                           fill="#f68b3c" />
                       </svg>
                     </div>
+                
                     <!-- <div class="custom-form__send-emoji c-form  mt-2">
                       <svg xmlns="http://www.w3.org/2000/svg" class="svg-icon svg-icon--send-emoji"
                         viewBox="0 0 46.2 46.2">
