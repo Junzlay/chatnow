@@ -8,7 +8,7 @@ $(document).ready(function () {
         localStorage.removeItem('name');
         localStorage.removeItem('room');
         localStorage.removeItem('profile');
-        window.location.replace("http://localhost:3000");
+        window.location.replace("https://chats-sa.herokuapp.com/");
       }
     }
 
@@ -202,7 +202,7 @@ $(document).ready(function () {
     if (leave) {
       localStorage.removeItem('name');
       localStorage.removeItem('room');
-      window.location.href = "http://localhost:3000";
+      window.location.href = "https://chats-sa.herokuapp.com/";
     }
 
   })
